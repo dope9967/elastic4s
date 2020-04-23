@@ -17,7 +17,7 @@ object Build extends AutoPlugin {
     val CommonsIoVersion = "2.4"
     val ElasticsearchVersion = "6.1.2"
     val ExtsVersion = "1.60.0"
-    val JacksonVersion = "2.9.2"
+    val JacksonVersion = "2.10.0"
     val Json4sVersion = "3.5.3"
     val SprayJsonVersion = "1.3.4"
     val AWSJavaSdkVersion = "1.11.258"
@@ -37,13 +37,19 @@ object Build extends AutoPlugin {
     // a 'compileonly' configuation
     ivyConfigurations += config("compileonly").hide,
     // appending everything from 'compileonly' to unmanagedClasspath
-    unmanagedClasspath in Compile ++= update.value.select(configurationFilter("compileonly")),
+    unmanagedClasspath in Compile ++= update.value
+      .select(configurationFilter("compileonly")),
     scalaVersion := "2.11.12",
     crossScalaVersions := Seq("2.11.12", "2.12.4"),
     publishMavenStyle := true,
     resolvers += Resolver.mavenLocal,
     resolvers += Resolver.url("https://artifacts.elastic.co/maven"),
-    javaOptions ++= Seq("-Xms512M", "-Xmx2048M", "-XX:MaxPermSize=2048M", "-XX:+CMSClassUnloadingEnabled"),
+    javaOptions ++= Seq(
+      "-Xms512M",
+      "-Xmx2048M",
+      "-XX:MaxPermSize=2048M",
+      "-XX:+CMSClassUnloadingEnabled"
+    ),
     publishArtifact in Test := false,
     fork := false,
     parallelExecution := false,
@@ -56,39 +62,23 @@ object Build extends AutoPlugin {
     scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8"),
     javacOptions := Seq("-source", "1.7", "-target", "1.7"),
     libraryDependencies ++= Seq(
-      "com.sksamuel.exts"                     %% "exts"                     % ExtsVersion,
-      "org.typelevel"                         %% "cats-core"                % CatsVersion,
-      "org.slf4j"                             %  "slf4j-api"                % Slf4jVersion,
-      "org.mockito"                           %  "mockito-all"              % MockitoVersion        % "test",
-      "org.scalatest"                         %% "scalatest"                % ScalatestVersion      % "test"
+      "com.sksamuel.exts" %% "exts" % ExtsVersion,
+      "org.typelevel" %% "cats-core" % CatsVersion,
+      "org.slf4j" % "slf4j-api" % Slf4jVersion,
+      "org.mockito" % "mockito-all" % MockitoVersion % "test",
+      "org.scalatest" %% "scalatest" % ScalatestVersion % "test"
     ),
-    publishTo := {
-      val nexus = "https://oss.sonatype.org/"
-      if (version.value.trim.endsWith("SNAPSHOT"))
-        Some("snapshots" at nexus + "content/repositories/snapshots")
-      else
-        Some("releases" at nexus + "service/local/staging/deploy/maven2")
-    },
-    pomExtra := {
-      <url>https://github.com/sksamuel/elastic4s</url>
-        <licenses>
-          <license>
-            <name>Apache 2</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-            <distribution>repo</distribution>
-          </license>
-        </licenses>
-        <scm>
-          <url>git@github.com:sksamuel/elastic4s.git</url>
-          <connection>scm:git@github.com:sksamuel/elastic4s.git</connection>
-        </scm>
-        <developers>
-          <developer>
-            <id>sksamuel</id>
-            <name>sksamuel</name>
-            <url>http://github.com/sksamuel</url>
-          </developer>
-        </developers>
-    }
+    publishTo := Some(
+      "GitHub dope9967 Apache Maven Packages" at "https://maven.pkg.github.com/dope9967/elastic4s"
+    ),
+    credentials += Credentials(
+      "GitHub Package Registry",
+      "maven.pkg.github.com",
+      "dope9967",
+      sys.env.getOrElse(
+        "GITHUB_TOKEN",
+        throw new IllegalAccessException("Missing GITHUB_TOKEN")
+      )
+    )
   )
 }
